@@ -6,7 +6,7 @@
 #    By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/01/22 10:08:41 by eralonso          #+#    #+#              #
-#    Updated: 2023/09/21 12:11:17 by eralonso         ###   ########.fr        #
+#    Updated: 2023/09/22 19:30:54 by eralonso         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,7 +60,7 @@ FILES		:=	main ScalarConverter
 
 #<---------------------------------->LANG<---------------------------------->#
 LANG		:=	CPP
-CFLAGS		:=	-Wall -Wextra -Werror
+CFLAGS		:=	-Wall -Wextra -Werror -fsanitize=address
 
 ifeq ($(LANG),C)
 	CC := cc
