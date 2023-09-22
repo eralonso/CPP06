@@ -6,7 +6,7 @@
 /*   By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 12:42:28 by eralonso          #+#    #+#             */
-/*   Updated: 2023/09/21 19:27:05 by eralonso         ###   ########.fr       */
+/*   Updated: 2023/09/22 13:36:42 by eralonso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,22 +111,21 @@ bool	ScalarConverter::isIntType( const std::string& str )
 	return (true);
 }
 
-bool	ScalarConverter::checkIsChar( const std::string& str, int ( *f )( int ) )
-{
-	int	value;
+// bool	ScalarConverter::checkIsChar( const std::string& str, int ( *f )( int ) )
+// {
+// 	int	value;
 
-	if ( str.length() > 0 && str.length() < 4 && isIntType( str ) )
-	{
-		value = std::stoi( str );
-		return ( f( value ) );
-	}
-	return ( false );
-}
+// 	if ( str.length() > 0 && str.length() < 4 && isIntType( str ) )
+// 	{
+// 		value = std::stoi( str );
+// 		return ( f( value ) );
+// 	}
+// 	return ( false );
+// }
 
 bool	ScalarConverter::checkCharLiteral( const std::string& str )
 {
-	return ( ( str.length() == 3 && str[ 0 ] == '\'' && str[ 2 ] == '\'' ) || \
-			 ( str.length() == 1 &&  ) );
+	return ( ( str.length() == 3 && str[ 0 ] == '\'' && str[ 2 ] == '\'' ) );
 }
 
 bool	ScalarConverter::isCharType( const std::string& str )
@@ -151,11 +150,12 @@ int8_t	ScalarConverter::getType( const std::string& str )
 void	ScalarConverter::convert( const std::string& toConvert )
 {
 	int8_t	type;
-	void	( *print[ NUM_TYPES - 1 ] )( const std::string& ) = { \
-										&ScalarConverter::printChar, \
-										&ScalarConverter::printInt, \
-										&ScalarConverter::printFloat, \
-										&ScalarConverter::printDouble };
+	t_types	t;
+	bool	( *convert[ NUM_TYPES - 1 ] )( const std::string&, t_types& ) = { \
+										&ScalarConverter::convertChar, \
+										&ScalarConverter::convertInt, \
+										&ScalarConverter::convertFloat, \
+										&ScalarConverter::convertDouble };
 
 	type = getType( toConvert );
 	if ( type == TYPE_INVALID )
@@ -163,17 +163,122 @@ void	ScalarConverter::convert( const std::string& toConvert )
 		std::cerr << ERR_MSG_INVALID_TYPE << std::endl;
 		return ;
 	}
+	bzero( &t, sizeof( t_types ) );
+	if ( convert[ type ]( toConvert, t ) == true )
+		printTypes( t );
 }
 
-void	ScalarConverter::printChar( const std::string& str )
+bool	ScalarConverter::convertChar( const std::string& str, t_types& t)
 {
-	std::string	print;
+	t.c = str[ 1 ];
+	t.i = static_cast< int >( t.c );
+	t.f = static_cast< float >( t.c );
+	t.d = static_cast< double >( t.c );
+	if ( !isprint( t.c ) )
+		t.c_flag = NON_DISPLAYABLE;
+	return ( true );
+}
 
-	if ( str.length() == 3 && str[ 0 ] == '\'' && str[ 2 ] == '\'' )
-		std::cout << str[ 1 ] << std::endl;
-	else if ( str.length() == 1 && isdigit( str[ 0 ] ) &&  )
-		std::cout << str[ 1 ] << std::endl;
-	std::cout << str << std::endl;
+bool	ScalarConverter::convertInt( const std::string& str, t_types& t )
+{
+	try
+	{
+		t.i = std::stoi( str );
+	}
+	catch ( std::exception& e )
+	{
+		std::cerr << "Invalid range: int -> overflow/underflow " << std::endl;
+		return ( false );
+	}
+	t.c = static_cast< char >( t.i );
+	t.f = static_cast< float >( t.i );
+	t.d = static_cast< double >( t.i );
+	if ( !isascii( t.i ) )
+		t.c_flag = IMPOSSIBLE_CONV;
+	else if ( !isprint( t.c ) )
+		t.c_flag = NON_DISPLAYABLE;
+	return ( true );
+}
+
+bool	ScalarConverter::convertFloat( const std::string& str, t_types& t )
+{
+	try
+	{
+		t.f = std::stof( str );
+	}
+	catch ( std::exception& e )
+	{
+		std::cerr << "Invalid range: float -> overflow/underflow " << std::endl;
+		return ( false );
+	}
+	if ( t.f > std::numeric_limits< int >::max() || t.f > std::numeric_limits< int >::min() )
+		t.i_flag = IMPOSSIBLE_CONV;
+	else
+		t.i = static_cast< int >( t.f );
+	if ( t.f > std::numeric_limits< char >::max() || t.f < 0 )
+		t.c_flag = IMPOSSIBLE_CONV;
+	else if ( !isprint( t.i ) )
+		t.c_flag = NON_DISPLAYABLE;
+	else 
+		t.c = static_cast< char >( t.f );
+	t.d = static_cast< double >( t.f );
+	return ( true );
+}
+
+bool	ScalarConverter::convertDouble( const std::string& str, t_types& t )
+{
+	try
+	{
+		t.d = std::stod( str );
+	}
+	catch ( std::exception& e )
+	{
+		std::cerr << "Invalid range: double -> overflow/underflow " << std::endl;
+		return ( false );
+	}
+	t.c = static_cast< char >( t.f );
+	if ( t.f > std::numeric_limits< int >::max() || t.f > std::numeric_limits< int >::min() )
+		t.i_flag = IMPOSSIBLE_CONV;
+	else
+		t.i = static_cast< int >( t.f );
+	t.d = static_cast< double >( t.f );
+	if ( !isascii( t.i ) )
+		t.c_flag = IMPOSSIBLE_CONV;
+	else if ( !isprint( t.c ) )
+		t.c_flag = NON_DISPLAYABLE;
+	return ( true );
+}
+
+void	ScalarConverter::printTypes( const t_types& t )
+{
+	void	( *print[ NUM_TYPES - 1 ] )( const t_types& ) = { \
+										&ScalarConverter::printChar, \
+										&ScalarConverter::printInt, \
+										&ScalarConverter::printFloat, \
+										&ScalarConverter::printDouble };
+
+	std::cout.precision( 1 );
+	std::cout << std::fixed;
+	for ( int i = 0; i < NUM_TYPES - 1; i++ )
+		print[ i ]( t );
+}
+
+void	ScalarConverter::printChar( const t_types& t )
+{
+	std::cout << "char: ";
+	switch ( t.c_flag )
+	{
+		case NON_DISPLAYABLE:
+			std::cout << "Non displayable";			
+			break;
+		case IMPOSSIBLE_CONV:
+			std::cout << "impossible";	
+			break;
+		default:
+			std::cout << t.c;
+			break;
+	}
+	std::cout << std::endl;
 }
 
 void	ScalarConverter::printInt( const std::string& str )
