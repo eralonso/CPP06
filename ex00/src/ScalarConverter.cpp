@@ -6,7 +6,7 @@
 /*   By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 12:42:28 by eralonso          #+#    #+#             */
-/*   Updated: 2023/09/23 12:58:15 by eralonso         ###   ########.fr       */
+/*   Updated: 2023/09/23 17:11:00 by eralonso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,13 @@ int	ScalarConverter::checkInfNan( const std::string& str, int type )
 bool	ScalarConverter::isDoubleType( const std::string& str )
 {
 	std::string::size_type	i;
-	int					dot;
+	int						dot;
+	bool					sign;
 
 	if ( checkInfNan( str, LIMITS_DOUBLE ) != NOT_LIMIT )
 		return ( true );
-	i = ( str[ 0 ] == '-' || str[ 0 ] == '+' ) ? 1 : 0;
+	sign = ( str[ 0 ] == '-' || str[ 0 ] == '+' );
+	i = sign ? 1 : 0;
 	dot = 0;
 	for ( ; i < str.length(); i++ )
 	{
@@ -62,7 +64,7 @@ bool	ScalarConverter::isDoubleType( const std::string& str )
 		else if ( str[ i ] == '.' )
 			dot = 1;
 	}
-	if ( dot == 0 || str.length() < 2 )
+	if ( dot == 0 || str.length() < ( 2 + sign ) )
 		return ( false );
 	return ( true );
 }
@@ -70,11 +72,13 @@ bool	ScalarConverter::isDoubleType( const std::string& str )
 bool	ScalarConverter::isFloatType( const std::string& str )
 {
 	std::string::size_type	i;
-	int					dot;
+	int						dot;
+	bool					sign;
 
 	if ( checkInfNan( str, LIMITS_FLOAT ) != NOT_LIMIT )
 		return ( true );
-	i = ( str[ 0 ] == '-' || str[ 0 ] == '+' ) ? 1 : 0;
+	sign = ( str[ 0 ] == '-' || str[ 0 ] == '+' );
+	i = sign ? 1 : 0;
 	dot = 0;
 	for ( ; i < str.length() && str[ i ] != 'f'; i++ )
 	{
@@ -85,7 +89,8 @@ bool	ScalarConverter::isFloatType( const std::string& str )
 		else if ( str[ i ] == '.' )
 			dot = 1;
 	}
-	if ( str[ i ] != 'f' || str[ i + 1 ] != '\0' || dot == 0 || str.length() < 3 )
+	if ( str[ i ] != 'f' || str[ i + 1 ] != '\0' \
+		|| dot == 0 || str.length() < ( 3 + sign ) )
 		return ( false );
 	return ( true );
 }
@@ -93,11 +98,15 @@ bool	ScalarConverter::isFloatType( const std::string& str )
 bool	ScalarConverter::isIntType( const std::string& str )
 {
 	std::string::size_type	i;
+	bool					sign;
 
-	i = ( str[ 0 ] == '-' || str[ 0 ] == '+' ) ? 1 : 0;
+	sign = ( str[ 0 ] == '-' || str[ 0 ] == '+' );
+	i = sign ? 1 : 0;
 	for ( ; i < str.length(); i++ )
 		if ( std::isdigit( str[ i ] ) == 0 )
 			return ( false );
+	if ( ( sign && str.length() == 1 ) || str.length() == 0 )
+		return ( false );
 	return (true);
 }
 
@@ -122,7 +131,7 @@ int	ScalarConverter::getType( const std::string& str )
 
 void	ScalarConverter::convert( const std::string& toConvert )
 {
-	int	type;
+	int		type;
 	t_types	t;
 	bool	( *convert[ NUM_TYPES - 1 ] )( const std::string&, t_types& ) = { \
 										&ScalarConverter::convertChar, \
@@ -133,7 +142,7 @@ void	ScalarConverter::convert( const std::string& toConvert )
 	type = getType( toConvert );
 	if ( type == TYPE_INVALID )
 	{
-		std::cerr << "Type: \"" << toConvert << "\" -> " << ERR_MSG_INVALID_TYPE << std::endl;
+		std::cerr << "Can't convert: \"" << toConvert << "\" -> " << ERR_MSG_INVALID_TYPE << std::endl;
 		return ;
 	}
 	bzero( &t, sizeof( t_types ) );
@@ -216,7 +225,7 @@ bool	ScalarConverter::convertFloat( const std::string& str, t_types& t )
 		std::cerr << "Invalid range: float -> overflow/underflow " << std::endl;
 		return ( false );
 	}
-	if ( t.f > std::numeric_limits< int >::max() || t.f < std::numeric_limits< int >::min() )
+	if ( t.f > std::numeric_limits< int >::max() || t.f < std::numeric_limits< int >::lowest() )
 		t.i_flag = OVER_UNDER_FLOW;
 	else
 		t.i = static_cast< int >( t.f );
@@ -243,11 +252,11 @@ bool	ScalarConverter::convertDouble( const std::string& str, t_types& t )
 		std::cerr << "Invalid range: double -> overflow/underflow " << std::endl;
 		return ( false );
 	}
-	if ( t.d > std::numeric_limits< int >::max() || t.d < std::numeric_limits< int >::min() )
+	if ( t.d > std::numeric_limits< int >::max() || t.d < std::numeric_limits< int >::lowest() )
 		t.i_flag = OVER_UNDER_FLOW;
 	else
 		t.i = static_cast< int >( t.d );
-	if ( t.d > std::numeric_limits< float >::max() || t.d < std::numeric_limits< float >::min() )
+	if ( t.d > std::numeric_limits< float >::max() || t.d < std::numeric_limits< float >::lowest() )
 		t.f_flag = OVER_UNDER_FLOW;
 	else
 		t.f = static_cast< float >( t.d );

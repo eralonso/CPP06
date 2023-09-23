@@ -6,7 +6,7 @@
 /*   By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 12:42:28 by eralonso          #+#    #+#             */
-/*   Updated: 2023/09/23 12:30:07 by eralonso         ###   ########.fr       */
+/*   Updated: 2023/09/23 16:21:58 by eralonso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 #include <iostream>
 #include <string>
-#include <sstream>
 #include <limits>
 
 // Number of type
