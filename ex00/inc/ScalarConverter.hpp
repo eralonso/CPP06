@@ -6,7 +6,7 @@
 /*   By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 12:42:28 by eralonso          #+#    #+#             */
-/*   Updated: 2023/09/22 18:56:33 by eralonso         ###   ########.fr       */
+/*   Updated: 2023/09/23 12:30:07 by eralonso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@
 #define PLUS_INFINIT_CASE ( 1 << 2 )
 #define MINUS_INFINIT_CASE ( 1 << 3 )
 #define NAN_CASE ( 1 << 4 )
+#define OVER_UNDER_FLOW ( 1 << 5 )
 
 typedef struct	s_types
 {

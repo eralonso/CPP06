@@ -6,7 +6,7 @@
 /*   By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/20 12:42:28 by eralonso          #+#    #+#             */
-/*   Updated: 2023/09/22 19:40:42 by eralonso         ###   ########.fr       */
+/*   Updated: 2023/09/23 12:58:15 by eralonso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ void	ScalarConverter::convert( const std::string& toConvert )
 	type = getType( toConvert );
 	if ( type == TYPE_INVALID )
 	{
-		std::cerr << ERR_MSG_INVALID_TYPE << std::endl;
+		std::cerr << "Type: \"" << toConvert << "\" -> " << ERR_MSG_INVALID_TYPE << std::endl;
 		return ;
 	}
 	bzero( &t, sizeof( t_types ) );
@@ -167,7 +167,7 @@ bool	ScalarConverter::convertInt( const std::string& str, t_types& t )
 	t.f = static_cast< float >( t.i );
 	t.d = static_cast< double >( t.i );
 	if ( !isascii( t.i ) )
-		t.c_flag = IMPOSSIBLE_CONV;
+		t.c_flag = OVER_UNDER_FLOW;
 	else if ( !isprint( t.c ) )
 		t.c_flag = NON_DISPLAYABLE;
 	return ( true );
@@ -216,12 +216,12 @@ bool	ScalarConverter::convertFloat( const std::string& str, t_types& t )
 		std::cerr << "Invalid range: float -> overflow/underflow " << std::endl;
 		return ( false );
 	}
-	if ( t.f > std::numeric_limits< int >::max() || t.f > std::numeric_limits< int >::min() )
-		t.i_flag = IMPOSSIBLE_CONV;
+	if ( t.f > std::numeric_limits< int >::max() || t.f < std::numeric_limits< int >::min() )
+		t.i_flag = OVER_UNDER_FLOW;
 	else
 		t.i = static_cast< int >( t.f );
 	if ( t.f > std::numeric_limits< char >::max() || t.f < 0 )
-		t.c_flag = IMPOSSIBLE_CONV;
+		t.c_flag = OVER_UNDER_FLOW;
 	else if ( !isprint( t.i ) )
 		t.c_flag = NON_DISPLAYABLE;
 	else 
@@ -243,13 +243,16 @@ bool	ScalarConverter::convertDouble( const std::string& str, t_types& t )
 		std::cerr << "Invalid range: double -> overflow/underflow " << std::endl;
 		return ( false );
 	}
-	if ( t.d > std::numeric_limits< int >::max() || t.d > std::numeric_limits< int >::min() )
-		t.i_flag = IMPOSSIBLE_CONV;
+	if ( t.d > std::numeric_limits< int >::max() || t.d < std::numeric_limits< int >::min() )
+		t.i_flag = OVER_UNDER_FLOW;
 	else
 		t.i = static_cast< int >( t.d );
-	t.f = static_cast< float >( t.d );
+	if ( t.d > std::numeric_limits< float >::max() || t.d < std::numeric_limits< float >::min() )
+		t.f_flag = OVER_UNDER_FLOW;
+	else
+		t.f = static_cast< float >( t.d );
 	if ( t.d > std::numeric_limits< char >::max() || t.d < 0 )
-		t.c_flag = IMPOSSIBLE_CONV;
+		t.c_flag = OVER_UNDER_FLOW;
 	else if ( !isprint( t.i ) )
 		t.c_flag = NON_DISPLAYABLE;
 	else
@@ -284,6 +287,9 @@ bool	ScalarConverter::checkPrint( std::string type, int flag )
 			break ;
 		case IMPOSSIBLE_CONV:
 			std::cout << "impossible" << std::endl;
+			break ;
+		case OVER_UNDER_FLOW:
+			std::cout << "[ overflow / underflow ]" << std::endl;
 			break ;
 		case MINUS_INFINIT_CASE:
 			std::cout << "-inf" << ( type.compare( "float" ) == 0 ? "f" : "" ) << std::endl;
