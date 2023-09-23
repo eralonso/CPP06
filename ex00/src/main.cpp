@@ -6,7 +6,7 @@
 /*   By: eralonso <eralonso@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/22 18:32:20 by eralonso          #+#    #+#             */
-/*   Updated: 2023/09/23 17:49:46 by eralonso         ###   ########.fr       */
+/*   Updated: 2023/09/23 17:56:31 by eralonso         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -236,31 +236,28 @@ bool    executionQuestion( std::string testsName )
 
 void	testing( void )
 {
+	std::string	questions[ 6 ] = { \
+								"Infinity ( [ + / - ] inf | [ + / - ] inff )", \
+								"Not a number ( nan / nanf )", \
+								"Char", \
+								"Int", \
+								"Float", \
+								"Double" };
+	void		( *doTest[ 6 ] )( void ) = { \
+								&testsInfinity, \
+								&testsNotANumber, \
+								&testsChar, \
+								&testsInt, \
+								&testsFloat, \
+								&testsDouble };
+
 	srand( time( NULL ) );
-
-	if ( executionQuestion( "Infinity ( [ + / - ] inf | [ + / - ] inff )" ) == true )
-		testsInfinity();
-	std::cout << std::endl;
-
-	if ( executionQuestion( "Not a number ( nan / nanf )" ) == true )
-		testsNotANumber();
-	std::cout << std::endl;
-
-	if ( executionQuestion( "Char" ) == true )
-		testsChar();
-	std::cout << std::endl;
-
-	if ( executionQuestion( "Int" ) == true )
-		testsInt();
-	std::cout << std::endl;
-
-	if ( executionQuestion( "Float" ) == true )
-		testsFloat();
-	std::cout << std::endl;
-
-	if ( executionQuestion( "Double" ) == true )
-		testsDouble();
-	std::cout << std::endl;
+	for ( int i = 0; i < 6; i++ )
+	{
+		if ( executionQuestion( questions[ i ] ) == true )
+			doTest[ i ]();
+		std::cout << std::endl;
+	}
 }
 
 int	main( int ac, char **argv )
